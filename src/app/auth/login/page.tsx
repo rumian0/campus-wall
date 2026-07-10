@@ -28,8 +28,7 @@ export default function LoginPage() {
       setError('用户名或密码错误')
       setLoading(false)
     } else {
-      router.push('/campus')
-      router.refresh()
+      window.location.href = '/campus'
     }
   }
 
