@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession()
-  if (!session?.id) {
+  if (!session?.id || session.id === 'guest') {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 
@@ -31,34 +31,34 @@ export async function POST(
     .select('*')
     .eq('user_id', userId)
     .eq('post_id', postId)
+    .maybeSingle()
+
+  const { data: post } = await supabase
+    .from('posts')
+    .select('like_count, dislike_count')
+    .eq('id', postId)
     .single()
+
+  let likeCount = post?.like_count ?? 0
+  let dislikeCount = post?.dislike_count ?? 0
 
   if (existing) {
     if (existing.type === type) {
       await supabase.from('likes').delete().eq('id', existing.id)
-      const delta = type === 'like' ? -1 : 1
-      if (type === 'like') {
-        await supabase.rpc('increment_like_count', { post_id: postId, delta })
-      } else {
-        await supabase.rpc('increment_dislike_count', { post_id: postId, delta })
-      }
+      if (type === 'like') likeCount = Math.max(0, likeCount - 1)
+      else dislikeCount = Math.max(0, dislikeCount - 1)
     } else {
       await supabase.from('likes').update({ type }).eq('id', existing.id)
-      const likeDelta = type === 'like' ? 1 : -1
-      const dislikeDelta = type === 'dislike' ? 1 : -1
-      await supabase.rpc('increment_like_count', { post_id: postId, delta: likeDelta })
-      await supabase.rpc('increment_dislike_count', { post_id: postId, delta: dislikeDelta })
+      if (type === 'like') { likeCount += 1; dislikeCount = Math.max(0, dislikeCount - 1) }
+      else { dislikeCount += 1; likeCount = Math.max(0, likeCount - 1) }
     }
   } else {
     await supabase.from('likes').insert({ user_id: userId, post_id: postId, type })
-    const delta = 1
-    if (type === 'like') {
-      await supabase.rpc('increment_like_count', { post_id: postId, delta })
-    } else {
-      await supabase.rpc('increment_dislike_count', { post_id: postId, delta })
-    }
+    if (type === 'like') likeCount += 1
+    else dislikeCount += 1
   }
 
+  await supabase.from('posts').update({ like_count: likeCount, dislike_count: dislikeCount }).eq('id', postId)
   await invalidatePostCache()
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, likeCount, dislikeCount })
 }

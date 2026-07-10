@@ -14,7 +14,16 @@ export async function GET(
     return NextResponse.json({ error: '无效的帖子 ID' }, { status: 400 })
   }
 
-  await supabase.rpc('increment_view_count', { post_id: postId })
+  const { data: post } = await supabase
+    .from('posts')
+    .select('view_count')
+    .eq('id', postId)
+    .single()
+
+  await supabase
+    .from('posts')
+    .update({ view_count: (post?.view_count ?? 0) + 1 })
+    .eq('id', postId)
 
   const { data, error } = await supabase
     .from('posts')
@@ -31,10 +40,10 @@ export async function GET(
   }
 
   const raw = data as any
-  const post = {
+  const result = {
     ...(mapRow(raw) as Record<string, unknown>),
     tags: (raw?.post_tags || []).map((pt: any) => pt.tag).filter(Boolean),
   }
 
-  return NextResponse.json(post)
+  return NextResponse.json(result)
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import * as bcrypt from 'bcryptjs'
-import { setSessionCookie } from '@/lib/session'
+import { setSessionCookieOnResponse } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,9 +36,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '用户名或密码错误' }, { status: 401 })
     }
 
-    await setSessionCookie({ id: user.id, name: user.nickname, role: user.role })
-
-    return NextResponse.json({ success: true })
+    const response = NextResponse.json({ success: true })
+    return setSessionCookieOnResponse(response, { id: user.id, name: user.nickname, role: user.role })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || '服务器错误' }, { status: 500 })
   }

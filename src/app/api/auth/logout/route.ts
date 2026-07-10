@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { clearSessionCookie } from '@/lib/session'
+import { clearSessionCookieOnResponse } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST() {
-  await clearSessionCookie()
-  return NextResponse.json({ success: true })
+  const response = NextResponse.json({ success: true })
+  return clearSessionCookieOnResponse(response)
 }

@@ -89,7 +89,15 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  await supabase.rpc('increment_comment_count', { post_id: postId, delta: 1 })
+  const { data: post } = await supabase
+    .from('posts')
+    .select('comment_count')
+    .eq('id', postId)
+    .single()
+  await supabase
+    .from('posts')
+    .update({ comment_count: (post?.comment_count ?? 0) + 1 })
+    .eq('id', postId)
 
   return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }

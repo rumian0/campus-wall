@@ -53,6 +53,21 @@ export async function GET(request: NextRequest) {
     hasMore: ((page - 1) * pageSize + posts.length) < (count || 0),
   }
 
+  // 批量增加浏览次数（仅非缓存请求，且忽略失败）
+  if (posts.length > 0) {
+    const postIds = posts.map((p) => p.id)
+    const { data: viewData } = await supabase
+      .from('posts')
+      .select('id, view_count')
+      .in('id', postIds)
+    for (const row of viewData || []) {
+      await supabase
+        .from('posts')
+        .update({ view_count: (row.view_count || 0) + 1 })
+        .eq('id', row.id)
+    }
+  }
+
   await setCachedPosts(cacheKey, 0, result)
   return NextResponse.json(result)
 }
