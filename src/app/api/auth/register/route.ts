@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import * as bcrypt from 'bcryptjs'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } },
-)
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+  const { createClient } = await import('@supabase/supabase-js')
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  )
+
   try {
     const { username, nickname, password } = await request.json()
 
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '密码至少6个字符' }, { status: 400 })
     }
 
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await supabase
       .from('users')
       .select('id')
       .eq('username', username)
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    const { error: insertError } = await supabaseAdmin.from('users').insert({
+    const { error: insertError } = await supabase.from('users').insert({
       username,
       nickname: nickname || username,
       password: hashedPassword,
