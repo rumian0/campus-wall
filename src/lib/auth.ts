@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { createServerSupabase } from './supabase/server'
-import bcrypt from 'bcryptjs'
+import { createClient } from '@supabase/supabase-js'
+import * as bcrypt from 'bcryptjs'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -14,7 +14,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null
 
-        const supabase = await createServerSupabase()
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { auth: { persistSession: false } },
+        )
+
         const { data: user } = await supabase
           .from('users')
           .select('*')
@@ -24,7 +29,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user) return null
         if (user.status === 'banned') return null
 
-        // 使用 bcryptjs 验证密码
         const isValid = await bcrypt.compare(
           credentials.password as string,
           user.password,
@@ -56,9 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
   },
-  pages: {
-    signIn: '/auth/login',
-  },
+  pages: { signIn: '/auth/login' },
   session: { strategy: 'jwt' },
   trustHost: true,
 })

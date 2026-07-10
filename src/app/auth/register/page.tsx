@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
-import bcrypt from 'bcryptjs'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -26,19 +24,16 @@ export default function RegisterPage() {
       return
     }
 
-    const supabase = createClient()
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    const { error: signUpError } = await supabase.from('users').insert({
-      username,
-      nickname: nickname || username,
-      password: hashedPassword,
-      role: 'user',
-      status: 'active',
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, nickname, password }),
     })
 
-    if (signUpError) {
-      setError(signUpError.message.includes('duplicate') ? '用户名已存在' : '注册失败')
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error || '注册失败')
       setLoading(false)
       return
     }

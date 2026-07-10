@@ -7,7 +7,7 @@ cd wall
 git init
 git add -A
 git commit -m "feat: init CampusWall - Next.js 15 + Supabase"
-git remote add origin https://github.com/rumian/campus-wall.git
+git remote add origin https://github.com/rumian0/campus-wall.git
 git branch -M main
 git push -u origin main
 ```
@@ -18,7 +18,8 @@ git push -u origin main
 2. 进入 SQL Editor → 粘贴 `scripts/seed.sql` 全部内容 → 运行
 3. 获取连接信息：
    - 项目 Settings → API → `Project URL` (NEXT_PUBLIC_SUPABASE_URL)
-   - 项目 Settings → API → `anon public` (NEXT_PUBLIC_SUPABASE_ANON_KEY)
+   - 项目 Settings → API → `anon public`
+   -  (NEXT_PUBLIC_SUPABASE_ANON_KEY)
    - 项目 Settings → API → `service_role` (SUPABASE_SERVICE_ROLE_KEY)
 
 ## 三、Vercel 一键部署

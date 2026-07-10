@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     // Cloudflare Images CDN 域名
     remotePatterns: [
-      { protocol: 'https', hostname: '**.cloudflare.com' },
-      { protocol: 'https', hostname: 'imagedelivery.net' },
+      { protocol: 'https', hostname: 'pub-*.r2.dev' },
+      { protocol: 'https', hostname: '*.r2.cloudflarestorage.com' },
       { protocol: 'https', hostname: '**.supabase.co' },
     ],
   },

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { uploadMultipleToCloudflare } from '@/lib/image'
+import { uploadMultipleToS3 } from '@/lib/image'
 
 export async function POST(request: NextRequest) {
   const session = await auth()
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请选择图片' }, { status: 400 })
     }
 
-    const results = await uploadMultipleToCloudflare(files)
+    const results = await uploadMultipleToS3(files)
     return NextResponse.json({ data: results })
   } catch (error: any) {
     return NextResponse.json(

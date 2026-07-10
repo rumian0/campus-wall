@@ -138,13 +138,13 @@ $$ LANGUAGE sql;
 -- 种子数据
 -- ============================================================
 
--- 管理员账号（密码: admin123）
+-- 管理员账号（密码: admin123）$2b$10$X/DtgycnzL6.EtBOAIkTYe1rZA7iDcLFa5/6y75KizJGVMueNJ/We
 INSERT INTO public.users (username, password, nickname, role, status) VALUES
-('admin', '$2a$12$LJ3m4ys3Lk0TSwHnbfOMiOXPm1Qlq5GzKJq0CZ0LKXyXq0XyXq0Xy', '管理员', 'admin', 'active');
+('admin', '$2b$10$X/DtgycnzL6.EtBOAIkTYe1rZA7iDcLFa5/6y75KizJGVMueNJ/We', '管理员', 'admin', 'active');
 
--- 演示用户（密码: user123）
+-- 演示用户（密码: user123）$2b$10$8cHrKGrX9ZU9IGY35/XT4O34IgqoOZf0l0pu6npijwb24.EliNZ5i
 INSERT INTO public.users (username, password, nickname, role, status) VALUES
-('demo', '$2a$12$LJ3m4ys3Lk0TSwHnbfOMiOXPm1Qlq5GzKJq0CZ0LKXyXq0XyXq0Xy', 'Demo用户', 'user', 'active');
+('demo', '$2b$10$8cHrKGrX9ZU9IGY35/XT4O34IgqoOZf0l0pu6npijwb24.EliNZ5i', 'Demo用户', 'user', 'active');
 
 -- 标签
 INSERT INTO public.tags (name, wall_type, sort) VALUES
