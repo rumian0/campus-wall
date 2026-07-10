@@ -83,7 +83,7 @@ export function WallFeed({ wallType }: WallFeedProps) {
         </div>
       </div>
 
-      {user ? (
+      {user && user.role !== 'guest' ? (
         <button
           onClick={() => setShowForm(true)}
           className="glass-btn-accent flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-medium"
@@ -93,7 +93,7 @@ export function WallFeed({ wallType }: WallFeedProps) {
         </button>
       ) : (
         <div className="rounded-2xl py-3 text-center text-sm opacity-60" style={{ background: 'var(--glass-bg)' }}>
-          登录后可以发布动态
+          {user?.role === 'guest' ? '登录后可发布动态' : '登录后可以发布动态'}
         </div>
       )}
 
@@ -121,11 +121,13 @@ export function WallFeed({ wallType }: WallFeedProps) {
         )}
       </div>
 
-      <PostForm
-        open={showForm}
-        onClose={() => { setShowForm(false); fetchPosts(1) }}
-        wallType={wallType}
-      />
+      {user && (
+        <PostForm
+          open={showForm}
+          onClose={() => { setShowForm(false); fetchPosts(1) }}
+          wallType={wallType}
+        />
+      )}
     </div>
   )
 }

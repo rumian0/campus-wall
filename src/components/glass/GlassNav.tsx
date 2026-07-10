@@ -53,7 +53,7 @@ export function GlassNav() {
             )
           })}
           <button
-            onClick={() => router.push(user ? '/auth/login' : '/auth/login')}
+            onClick={() => router.push(user ? '/admin' : '/auth/login')}
             className="relative flex flex-col items-center gap-0.5 px-3 py-2"
           >
             <span className="text-xl">{user ? '👤' : '🚪'}</span>

@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [guestLoading, setGuestLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,6 +37,17 @@ export default function LoginPage() {
     } catch {
       setError('网络错误，请稍后重试')
       setLoading(false)
+    }
+  }
+
+  async function handleGuest() {
+    setGuestLoading(true)
+    try {
+      await fetch('/api/auth/guest', { method: 'POST' })
+      window.location.href = '/campus'
+    } catch {
+      setError('进入游客模式失败')
+      setGuestLoading(false)
     }
   }
 
@@ -85,6 +97,16 @@ export default function LoginPage() {
             {loading ? '登录中...' : '登录'}
           </button>
         </form>
+
+        <div className="mt-4">
+          <button
+            onClick={handleGuest}
+            disabled={guestLoading}
+            className="glass-btn w-full rounded-xl py-3 text-sm font-medium disabled:opacity-50"
+          >
+            {guestLoading ? '进入中...' : '游客模式 - 随便看看'}
+          </button>
+        </div>
 
         <p className="mt-6 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
           还没有账号？{' '}
