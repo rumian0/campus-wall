@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabase } from '@/lib/supabase/server'
 import * as bcrypt from 'bcryptjs'
 import { setSessionCookieOnResponse } from '@/lib/session'
 
@@ -8,21 +8,19 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
-    if (!username || !password) {
+    const trimmedUser = (username || '').trim()
+    const trimmedPass = (password || '').trim()
+    if (!trimmedUser || !trimmedPass) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false } },
-    )
+    const supabase = await createServerSupabase()
 
     const { data: user } = await supabase
       .from('users')
       .select('*')
-      .eq('username', username)
-      .single()
+      .eq('username', trimmedUser)
+      .maybeSingle()
 
     if (!user) {
       return NextResponse.json({ error: '用户名或密码错误' }, { status: 401 })
@@ -31,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '账号已被禁用' }, { status: 403 })
     }
 
-    const isValid = await bcrypt.compare(password, user.password)
+    const isValid = await bcrypt.compare(trimmedPass, user.password)
     if (!isValid) {
       return NextResponse.json({ error: '用户名或密码错误' }, { status: 401 })
     }

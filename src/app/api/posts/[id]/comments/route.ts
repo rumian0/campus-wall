@@ -57,7 +57,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession()
-  if (!session?.id) {
+  if (!session?.id || session.role === 'guest') {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 
