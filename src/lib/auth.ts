@@ -14,19 +14,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null
 
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          { auth: { persistSession: false } },
-        )
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+        if (!url || !key) throw new Error('Supabase 未配置')
 
-        const { data: user } = await supabase
+        const supabase = createClient(url, key, { auth: { persistSession: false } })
+
+        const { data: user, error } = await supabase
           .from('users')
           .select('*')
           .eq('username', credentials.username as string)
           .single()
 
-        if (!user) return null
+        if (error || !user) return null
         if (user.status === 'banned') return null
 
         const isValid = await bcrypt.compare(
