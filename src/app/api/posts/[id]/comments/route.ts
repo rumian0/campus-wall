@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { auth } from '@/lib/auth'
+import { mapRow, mapRows } from '@/lib/db-utils'
 
 export async function GET(
   _request: NextRequest,
@@ -18,17 +19,16 @@ export async function GET(
     .from('comments')
     .select(`
       *,
-      author:authorId ( id, nickname, avatar )
+      author:author_id ( id, nickname, avatar )
     `)
-    .eq('postId', postId)
-    .is('parentId', null)
-    .order('createdAt', { ascending: true })
+    .eq('post_id', postId)
+    .is('parent_id', null)
+    .order('created_at', { ascending: true })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // 获取子评论
   const commentIds = (data || []).map((c) => c.id)
   let replies: any[] = []
   if (commentIds.length > 0) {
@@ -36,16 +36,17 @@ export async function GET(
       .from('comments')
       .select(`
         *,
-        author:authorId ( id, nickname, avatar )
+        author:author_id ( id, nickname, avatar )
       `)
-      .in('parentId', commentIds)
-      .order('createdAt', { ascending: true })
+      .in('parent_id', commentIds)
+      .order('created_at', { ascending: true })
     replies = replyData || []
   }
 
+  const rawReplies = replies
   const comments = (data || []).map((comment) => ({
-    ...comment,
-    replies: replies.filter((r) => r.parentId === comment.id),
+    ...(mapRow(comment) as Record<string, unknown>),
+    replies: rawReplies.filter((r) => r.parent_id === comment.id).map((r) => mapRow(r) as Record<string, unknown>),
   }))
 
   return NextResponse.json({ data: comments })
@@ -77,9 +78,9 @@ export async function POST(
     .from('comments')
     .insert({
       content: body.content.trim(),
-      parentId: body.parentId || null,
-      authorId: session.user.id,
-      postId,
+      parent_id: body.parentId || null,
+      author_id: session.user.id,
+      post_id: postId,
     })
     .select()
     .single()
@@ -88,8 +89,7 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // 更新帖子评论数
   await supabase.rpc('increment_comment_count', { post_id: postId, delta: 1 })
 
-  return NextResponse.json(data)
+  return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }

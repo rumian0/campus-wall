@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
+import { mapRow } from '@/lib/db-utils'
 
 export async function GET(
   _request: NextRequest,
@@ -13,15 +14,14 @@ export async function GET(
     return NextResponse.json({ error: '无效的帖子 ID' }, { status: 400 })
   }
 
-  // 增加浏览量
   await supabase.rpc('increment_view_count', { post_id: postId })
 
   const { data, error } = await supabase
     .from('posts')
     .select(`
       *,
-      author:authorId ( id, nickname, avatar ),
-      post_tags ( tag:tagId ( * ) )
+      author:author_id ( id, nickname, avatar ),
+      post_tags ( tag:tag_id ( * ) )
     `)
     .eq('id', postId)
     .single()
@@ -30,9 +30,10 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  const raw = data as any
   const post = {
-    ...data,
-    tags: (data as any).post_tags?.map((pt: any) => pt.tag).filter(Boolean) || [],
+    ...(mapRow(raw) as Record<string, unknown>),
+    tags: (raw?.post_tags || []).map((pt: any) => pt.tag).filter(Boolean),
   }
 
   return NextResponse.json(post)

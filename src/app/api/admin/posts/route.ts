@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase/server'
 import { auth } from '@/lib/auth'
 import { invalidatePostCache } from '@/lib/kv'
+import { mapRow, mapRows } from '@/lib/db-utils'
 
 async function checkAdmin() {
   const session = await auth()
@@ -21,15 +22,15 @@ export async function GET() {
     .from('posts')
     .select(`
       *,
-      author:authorId ( id, nickname, username, role )
+      author:author_id ( id, nickname, username, role )
     `)
-    .order('createdAt', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json(mapRows(data || []))
 }
 
 export async function PATCH(request: NextRequest) {
@@ -44,7 +45,7 @@ export async function PATCH(request: NextRequest) {
     .from('posts')
     .update({
       status: body.status,
-      isApproved: body.isApproved,
+      is_approved: body.isApproved,
     })
     .eq('id', body.id)
     .select()
@@ -55,7 +56,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   await invalidatePostCache()
-  return NextResponse.json(data)
+  return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }
 
 export async function DELETE(request: NextRequest) {

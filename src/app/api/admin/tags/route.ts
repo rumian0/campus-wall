@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase/server'
 import { auth } from '@/lib/auth'
+import { mapRow, mapRows } from '@/lib/db-utils'
 
 async function checkAdmin() {
   const session = await auth()
@@ -25,7 +26,7 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json(mapRows(data || []))
 }
 
 export async function POST(request: NextRequest) {
@@ -38,7 +39,12 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('tags')
-    .insert(body)
+    .insert({
+      name: body.name,
+      icon: body.icon,
+      wall_type: body.wallType,
+      sort: body.sort ?? 0,
+    })
     .select()
     .single()
 
@@ -46,7 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }
 
 export async function PUT(request: NextRequest) {
@@ -59,7 +65,7 @@ export async function PUT(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('tags')
-    .update({ name: body.name, icon: body.icon, sort: body.sort })
+    .update({ name: body.name, icon: body.icon, wall_type: body.wallType, sort: body.sort })
     .eq('id', body.id)
     .select()
     .single()
@@ -68,7 +74,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }
 
 export async function DELETE(request: NextRequest) {

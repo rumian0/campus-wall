@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { auth } from '@/lib/auth'
 import { getCachedPosts, setCachedPosts, invalidatePostCache } from '@/lib/kv'
+import { mapRow, mapRows } from '@/lib/db-utils'
 import type { Post, PaginatedResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -21,16 +22,16 @@ export async function GET(request: NextRequest) {
     .from('posts')
     .select(`
       *,
-      author:authorId ( id, nickname, avatar ),
-      post_tags ( tag:tagId ( * ) )
+      author:author_id ( id, nickname, avatar ),
+      post_tags ( tag:tag_id ( * ) )
     `, { count: 'exact' })
     .eq('status', 'approved')
-    .eq('wallType', wallType)
-    .order('createdAt', { ascending: false })
+    .eq('wall_type', wallType)
+    .order('created_at', { ascending: false })
     .range((page - 1) * pageSize, page * pageSize - 1)
 
   if (tagId) {
-    query = query.eq('post_tags.tagId', tagId)
+    query = query.eq('post_tags.tag_id', tagId)
   }
 
   const { data, error, count } = await query
@@ -39,10 +40,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const posts: Post[] = (data || []).map((item: any) => ({
-    ...item,
-    tags: (item.post_tags || []).map((pt: any) => pt.tag).filter(Boolean),
-  }))
+  const posts = ((data || []).map((item: any) => ({
+    ...mapRow(item),
+    tags: ((item.post_tags || []) as any[]).map((pt: any) => pt.tag).filter(Boolean),
+  })) as unknown) as Post[]
 
   const result: PaginatedResponse<Post> = {
     data: posts,
@@ -69,11 +70,11 @@ export async function POST(request: NextRequest) {
     .from('posts')
     .insert({
       content: body.content,
-      wallType: body.wallType || 'campus',
+      wall_type: body.wallType || 'campus',
       images: body.images || [],
-      authorId: session.user.id,
+      author_id: session.user.id,
       status: 'pending',
-      isApproved: false,
+      is_approved: false,
     })
     .select()
     .single()
@@ -84,12 +85,12 @@ export async function POST(request: NextRequest) {
 
   if (body.tagIds?.length > 0) {
     const tagInserts = body.tagIds.map((tagId: number) => ({
-      postId: data.id,
-      tagId,
+      post_id: data.id,
+      tag_id: tagId,
     }))
     await supabase.from('post_tags').insert(tagInserts)
   }
 
   await invalidatePostCache(body.wallType)
-  return NextResponse.json(data)
+  return NextResponse.json(mapRow(data) as Record<string, unknown>)
 }

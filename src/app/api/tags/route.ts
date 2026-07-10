@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   let query = supabase.from('tags').select('*').order('sort', { ascending: true })
 
   if (wallType) {
-    query = query.eq('wallType', wallType)
+    query = query.eq('wall_type', wallType)
   }
 
   const { data, error } = await query

@@ -26,17 +26,15 @@ export async function POST(
   const supabase = await createServerSupabase()
   const userId = session.user.id
 
-  // 查询是否已点赞/踩
   const { data: existing } = await supabase
     .from('likes')
     .select('*')
-    .eq('userId', userId)
-    .eq('postId', postId)
+    .eq('user_id', userId)
+    .eq('post_id', postId)
     .single()
 
   if (existing) {
     if (existing.type === type) {
-      // 取消
       await supabase.from('likes').delete().eq('id', existing.id)
       const delta = type === 'like' ? -1 : 1
       if (type === 'like') {
@@ -45,7 +43,6 @@ export async function POST(
         await supabase.rpc('increment_dislike_count', { post_id: postId, delta })
       }
     } else {
-      // 切换
       await supabase.from('likes').update({ type }).eq('id', existing.id)
       const likeDelta = type === 'like' ? 1 : -1
       const dislikeDelta = type === 'dislike' ? 1 : -1
@@ -53,8 +50,7 @@ export async function POST(
       await supabase.rpc('increment_dislike_count', { post_id: postId, delta: dislikeDelta })
     }
   } else {
-    // 新增
-    await supabase.from('likes').insert({ userId, postId, type })
+    await supabase.from('likes').insert({ user_id: userId, post_id: postId, type })
     const delta = 1
     if (type === 'like') {
       await supabase.rpc('increment_like_count', { post_id: postId, delta })
