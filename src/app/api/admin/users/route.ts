@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 
 async function checkAdmin() {
-  const session = await auth()
-  if (!session || !['admin', 'super_admin'].includes((session.user as any).role)) {
+  const session = await getSession()
+  if (!session || !['admin', 'super_admin'].includes(session.role)) {
     return false
   }
   return true

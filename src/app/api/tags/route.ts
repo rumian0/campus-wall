@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth()
-  if (!session || !['admin', 'super_admin'].includes((session.user as any).role)) {
+  const session = await getSession()
+  if (!session || !['admin', 'super_admin'].includes(session.role)) {
     return NextResponse.json({ error: '无权限' }, { status: 403 })
   }
 

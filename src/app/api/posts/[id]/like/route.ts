@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { invalidatePostCache } from '@/lib/kv'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
+  const session = await getSession()
+  if (!session?.id) {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 
@@ -24,7 +24,7 @@ export async function POST(
   }
 
   const supabase = await createServerSupabase()
-  const userId = session.user.id
+  const userId = session.id
 
   const { data: existing } = await supabase
     .from('likes')

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { getCachedPosts, setCachedPosts, invalidatePostCache } from '@/lib/kv'
 import { mapRow, mapRows } from '@/lib/db-utils'
 import type { Post, PaginatedResponse } from '@/types'
@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) {
+  const session = await getSession()
+  if (!session?.id) {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       content: body.content,
       wall_type: body.wallType || 'campus',
       images: body.images || [],
-      author_id: session.user.id,
+      author_id: session.id,
       status: 'pending',
       is_approved: false,
     })

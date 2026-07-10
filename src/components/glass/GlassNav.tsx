@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/ui-utils'
 import type { WallType } from '@/types'
 
@@ -15,14 +15,12 @@ const TABS: { id: WallType; label: string; icon: string }[] = [
 export function GlassNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { user } = useAuth()
 
   const currentTab = pathname.split('/')[1] || 'campus'
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[env(safe-area-inset-bottom)]"
-    >
+    <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md rounded-[28px] px-2 py-1.5 shadow-2xl" style={{ background: 'var(--tab-bar-bg)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1px solid var(--glass-border)', borderTop: '0.5px solid var(--glass-highlight)' }}>
         <div className="flex items-center justify-around">
           {TABS.map((tab) => {
@@ -46,9 +44,7 @@ export function GlassNav() {
                 <span
                   className={cn(
                     'relative text-[10px] font-medium tracking-wide',
-                    isActive
-                      ? 'text-white'
-                      : 'text-white/40',
+                    isActive ? 'text-white' : 'text-white/40',
                   )}
                 >
                   {tab.label}
@@ -56,6 +52,15 @@ export function GlassNav() {
               </button>
             )
           })}
+          <button
+            onClick={() => router.push(user ? '/auth/login' : '/auth/login')}
+            className="relative flex flex-col items-center gap-0.5 px-3 py-2"
+          >
+            <span className="text-xl">{user ? '👤' : '🚪'}</span>
+            <span className="relative text-[10px] font-medium tracking-wide text-white/40">
+              {user ? '我的' : '登录'}
+            </span>
+          </button>
         </div>
       </div>
     </nav>

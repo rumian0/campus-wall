@@ -8,7 +8,7 @@ import { ImageGrid } from './ImageGrid'
 import { PostActions } from './PostActions'
 import { CommentList } from '@/components/comment/CommentList'
 import { CommentForm } from '@/components/comment/CommentForm'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { formatTime } from '@/lib/utils'
 import type { Post } from '@/types'
 
@@ -19,7 +19,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onLike, onComment }: PostCardProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [showComments, setShowComments] = useState(false)
   const [showFullContent, setShowFullContent] = useState(false)
   const isLongContent = post.content.length > 200
@@ -111,7 +111,7 @@ export function PostCard({ post, onLike, onComment }: PostCardProps) {
         {showComments && (
           <div className="border-t pt-3" style={{ borderColor: 'var(--glass-border)' }}>
             <CommentList postId={post.id} />
-            {session && (
+            {user && (
               <div className="mt-3">
                 <CommentForm
                   postId={post.id}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/session'
 import { mapRow, mapRows } from '@/lib/db-utils'
 
 export async function GET(
@@ -56,8 +56,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
+  const session = await getSession()
+  if (!session?.id) {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 
@@ -79,7 +79,7 @@ export async function POST(
     .insert({
       content: body.content.trim(),
       parent_id: body.parentId || null,
-      author_id: session.user.id,
+      author_id: session.id,
       post_id: postId,
     })
     .select()

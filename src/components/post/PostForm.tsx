@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { ImagePlus, X, Loader2 } from 'lucide-react'
 import { GlassModal } from '@/components/glass/GlassModal'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import type { WallType } from '@/types'
 
@@ -15,7 +15,7 @@ interface PostFormProps {
 }
 
 export function PostForm({ open, onClose, wallType = 'campus' }: PostFormProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const router = useRouter()
   const [content, setContent] = useState('')
   const [images, setImages] = useState<File[]>([])
@@ -23,7 +23,7 @@ export function PostForm({ open, onClose, wallType = 'campus' }: PostFormProps) 
   const [loading, setLoading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  if (!session) {
+  if (!user) {
     router.push('/auth/login')
     return null
   }

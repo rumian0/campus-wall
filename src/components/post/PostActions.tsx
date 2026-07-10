@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Heart, MessageCircle, ThumbsDown } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 
 interface PostActionsProps {
@@ -19,11 +19,11 @@ export function PostActions({
   onLike,
   onCommentToggle,
 }: PostActionsProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const router = useRouter()
 
   function handleAction(action: () => void) {
-    if (!session) {
+    if (!user) {
       router.push('/auth/login')
       return
     }
