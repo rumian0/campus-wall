@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase, createAdminSupabase } from '@/lib/supabase/server'
 import { getSession } from '@/lib/session'
 import { getCachedPosts, setCachedPosts, invalidatePostCache } from '@/lib/kv'
 import { mapRow, mapRows } from '@/lib/db-utils'
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const supabase = await createServerSupabase()
+  const supabase = await createAdminSupabase()
 
   const { data, error } = await supabase
     .from('posts')

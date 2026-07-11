@@ -4,7 +4,7 @@ import { uploadMultipleToS3 } from '@/lib/image'
 
 export async function POST(request: NextRequest) {
   const session = await getSession()
-  if (!session?.id) {
+  if (!session?.id || session.role === 'guest') {
     return NextResponse.json({ error: '未登录' }, { status: 401 })
   }
 

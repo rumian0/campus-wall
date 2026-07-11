@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase, createAdminSupabase } from '@/lib/supabase/server'
 import { getSession } from '@/lib/session'
 import { mapRow, mapRows } from '@/lib/db-utils'
 
@@ -72,7 +72,7 @@ export async function POST(
     return NextResponse.json({ error: '评论内容不能为空' }, { status: 400 })
   }
 
-  const supabase = await createServerSupabase()
+  const supabase = await createAdminSupabase()
 
   const { data, error } = await supabase
     .from('comments')

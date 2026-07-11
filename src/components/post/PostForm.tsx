@@ -42,14 +42,15 @@ export function PostForm({ open, onClose, wallType = 'campus' }: PostFormProps) 
     setLoading(true)
 
     try {
-      // 上传图片到 Cloudflare Images
+      // 上传图片到 Cloudflare R2
       const imageUrls: string[] = []
       for (const file of images) {
         const formData = new FormData()
         formData.append('file', file)
         const res = await fetch('/api/upload', { method: 'POST', body: formData })
         const data = await res.json()
-        if (data.url) imageUrls.push(data.url)
+        const url = data.data?.[0]?.url
+        if (url) imageUrls.push(url)
       }
 
       // 创建帖子

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/server'
 import * as bcrypt from 'bcryptjs'
 import { setSessionCookieOnResponse } from '@/lib/session'
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
     }
 
-    const supabase = await createServerSupabase()
+    const supabase = await createAdminSupabase()
 
     const { data: user } = await supabase
       .from('users')

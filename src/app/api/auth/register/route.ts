@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/server'
 import * as bcrypt from 'bcryptjs'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '密码至少6个字符' }, { status: 400 })
     }
 
-    const supabase = await createServerSupabase()
+    const supabase = await createAdminSupabase()
 
     const { data: existing, error: lookupError } = await supabase
       .from('users')

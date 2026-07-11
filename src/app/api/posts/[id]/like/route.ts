@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminSupabase } from '@/lib/supabase/server'
 import { getSession } from '@/lib/session'
 import { invalidatePostCache } from '@/lib/kv'
 
@@ -23,7 +23,7 @@ export async function POST(
     return NextResponse.json({ error: '无效的操作类型' }, { status: 400 })
   }
 
-  const supabase = await createServerSupabase()
+  const supabase = await createAdminSupabase()
   const userId = session.id
 
   const { data: existing } = await supabase
